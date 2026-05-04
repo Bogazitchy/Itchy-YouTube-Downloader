@@ -8,7 +8,7 @@
   ##      ##     #####  ##  ##    ##  
 ```
 
-**Versiyon:** v1.0 | **Platform:** Windows | created by M.Mert
+**Versiyon:** v1.3 | **Platform:** Windows | created by M.Mert
 
 YouTube'dan MP3, MP4 ve M4A indiren, retro terminal tasarımlı masaüstü uygulaması.
 
