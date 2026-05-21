@@ -5,3 +5,9 @@ __pycache__/
 *.pyc
 .openclaw/
 node_modules/
+ffmpeg.exe
+ffplay.exe
+ffprobe.exe
+installer_output/
+history.json
+stats.json

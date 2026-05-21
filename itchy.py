@@ -53,38 +53,38 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
 DARK = {
-    "BG":      "#2A353A",
-    "SURFACE": "#313F46",
-    "SURF2":   "#3A4A52",
-    "SURF3":   "#263035",
-    "ACCENT":  "#FB923C",
-    "ACCENT2": "#E67E22",
-    "TEXT":    "#D1D9DD",
-    "TEXT_DIM":"#5A7080",
-    "TEXT_MID":"#8AA0AA",
-    "BORDER":  "#3D5060",
-    "BORDER2": "#304048",
+    "BG":      "#0B1017",
+    "SURFACE": "#111827",
+    "SURF2":   "#172030",
+    "SURF3":   "#0F1724",
+    "ACCENT":  "#38BDF8",
+    "ACCENT2": "#0EA5E9",
+    "TEXT":    "#E5EEF7",
+    "TEXT_DIM":"#64748B",
+    "TEXT_MID":"#A7B4C6",
+    "BORDER":  "#263449",
+    "BORDER2": "#1F2A3A",
     "RED":     "#EF4444",
-    "YELLOW":  "#F59E0B",
-    "GREEN":   "#FB923C",
-    "ORANGE":  "#E67E22",
+    "YELLOW":  "#FBBF24",
+    "GREEN":   "#22C55E",
+    "ORANGE":  "#F97316",
 }
 LIGHT = {
-    "BG":      "#f0ebe0",
-    "SURFACE": "#faf7f0",
-    "SURF2":   "#f5f0e5",
-    "SURF3":   "#ece6d8",
-    "ACCENT":  "#111111",
-    "ACCENT2": "#333333",
-    "TEXT":    "#111111",
-    "TEXT_DIM":"#999999",
-    "TEXT_MID":"#555555",
-    "BORDER":  "#c8b898",
-    "BORDER2": "#d8c8a8",
-    "RED":     "#aa2222",
-    "YELLOW":  "#886600",
-    "GREEN":   "#111111",
-    "ORANGE":  "#885500",
+    "BG":      "#EEF4FA",
+    "SURFACE": "#FFFFFF",
+    "SURF2":   "#F8FBFF",
+    "SURF3":   "#E8F0FA",
+    "ACCENT":  "#0284C7",
+    "ACCENT2": "#0369A1",
+    "TEXT":    "#0F172A",
+    "TEXT_DIM":"#8090A4",
+    "TEXT_MID":"#475569",
+    "BORDER":  "#D7E2EF",
+    "BORDER2": "#E3ECF6",
+    "RED":     "#DC2626",
+    "YELLOW":  "#CA8A04",
+    "GREEN":   "#16A34A",
+    "ORANGE":  "#EA580C",
 }
 
 _IS_DARK = True
@@ -191,26 +191,36 @@ class QueueItem:
 
 # ─── Retro card helper ────────────────────────────────────────────────────────
 def rcard(parent, label="", **kw):
-    """Retro terminal card with bracket decoration and optional label."""
-    outer = ctk.CTkFrame(parent, fg_color=SURF2, corner_radius=6,
+    """Modern glass-like card with optional label."""
+    outer = ctk.CTkFrame(parent, fg_color=SURF2, corner_radius=12,
                          border_color=BORDER, border_width=1, **kw)
     if label:
-        ctk.CTkLabel(outer, text=f"// {label}",
-                     font=(MONO_FONT, 9), text_color=TEXT_DIM).pack(
-            anchor="w", padx=12, pady=(8,2))
+        ctk.CTkLabel(outer, text=label,
+                     font=("Segoe UI", 11, "bold"), text_color=TEXT_MID).pack(
+            anchor="w", padx=14, pady=(12,4))
     return outer
 
 def rbtn(parent, text, command=None, accent=False, danger=False, small=False, **kw):
-    """Retro styled button."""
+    """Modern styled button."""
     h = 32 if small else 44
     fg = ACCENT if accent else (SURF3 if not danger else SURF2)
     tc = BG if accent else (RED if danger else TEXT_MID)
     bc = ACCENT if accent else (RED if danger else BORDER)
-    return ctk.CTkButton(parent, text=text, command=command,
-                         font=(MONO_FONT, 10 if small else 11, "bold"),
+    # Wrap command to prevent firing while UI is being built
+    safe_cmd = command
+    if command:
+        def safe_cmd(_cmd=command):
+            import gc
+            # Find app instance
+            for obj in gc.get_objects():
+                if isinstance(obj, ctk.CTk) and hasattr(obj, "_building") and obj._building:
+                    return
+            _cmd()
+    return ctk.CTkButton(parent, text=text, command=safe_cmd,
+                         font=("Segoe UI", 11 if small else 12, "bold"),
                          fg_color=fg, hover_color=ACCENT2 if accent else SURF2,
                          text_color=tc, border_color=bc, border_width=1,
-                         height=h, corner_radius=6, **kw)
+                         height=h, corner_radius=10, **kw)
 
 # ─── Pixel font canvas ───────────────────────────────────────────────────────
 PIXEL_FONT = {
@@ -225,6 +235,7 @@ def draw_pixel_text(canvas, text, x, y, pix, gap, color_top, color_bot):
     """Draw blocky pixel text on a tkinter Canvas."""
     cx = x
     rows = 7
+    block = max(2, pix - 2)
     for ch in text.upper():
         if ch == ' ':
             cx += pix * 3 + gap
@@ -248,12 +259,12 @@ def draw_pixel_text(canvas, text, x, y, pix, gap, color_top, color_bot):
                     px = cx + col_i * pix
                     py = y + row_i * pix
                     # Main block
-                    canvas.create_rectangle(px, py, px+pix-1, py+pix-1,
+                    canvas.create_rectangle(px, py, px+block, py+block,
                         fill=fill, outline="")
                     # Bottom-right shadow for 3D depth
-                    canvas.create_rectangle(px+1, py+pix-2, px+pix-1, py+pix-1,
+                    canvas.create_rectangle(px, py+block-1, px+block, py+block,
                         fill=dark, outline="")
-                    canvas.create_rectangle(px+pix-2, py+1, px+pix-1, py+pix-1,
+                    canvas.create_rectangle(px+block-1, py, px+block, py+block,
                         fill=dark, outline="")
         cx += len(pattern[0]) * pix + gap
 
@@ -274,24 +285,24 @@ class PixelTitleCanvas(tk.Canvas):
         w = self.winfo_width() or 700
         h = self.winfo_height() or 80
         pix = self._pix
-        gap = pix + 2
+        gap = pix + 4
         # Total width for ITCHY: I=5,T=5,C=5,H=5,Y=5 cols each + gaps
         total_w = 5 * (5 * pix) + 4 * gap
         x = (w - total_w) // 2
         y = (h - 7 * pix) // 2
         if self._is_dark_mode:
-            top = (240, 140, 20)   # bright orange-yellow
-            bot = (180, 80, 10)    # darker burnt orange
+            top = (125, 211, 252)
+            bot = (14, 165, 233)
         else:
-            top = (0, 60, 200)     # bright blue
-            bot = (0, 30, 140)     # dark blue
+            top = (2, 132, 199)
+            bot = (30, 64, 175)
         draw_pixel_text(self, "ITCHY", x, y, pix, gap, top, bot)
 
 # ════════════════════════════════════════════════════════════════════════════════
 class ItchyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("ITCHY YOUTUBE DOWNLOADER v1.0")
+        self.title("ITCHY YOUTUBE DOWNLOADER v1.4")
         self.geometry("1080x840")
         self.minsize(900, 720)
         self.resizable(True, True)
@@ -339,6 +350,9 @@ class ItchyApp(ctk.CTk):
         self._batch_file    = ctk.StringVar(value="")
         self._anim_alpha    = 0.0
         self._anim_running  = False
+        self._advanced_open = False
+        self._log_open      = False
+        self._preferred_quality_prefix = ""
         # New v1.0 features
         self._discord_rpc   = None
         self._discord_enabled = ctk.BooleanVar(value=False)
@@ -402,34 +416,34 @@ class ItchyApp(ctk.CTk):
             h = max(self.winfo_height(), 900)
             dark = _IS_DARK
             if dark:
-                bg_col = (42, 53, 58)   # #2A353A
-                dot_col = (251, 146, 60) # #FB923C orange
+                bg_col = (11, 16, 23)
+                dot_col = (56, 189, 248)
                 img = Image.new("RGB", (w, h), bg_col)
                 draw = ImageDraw.Draw(img)
-                spacing = 14
+                spacing = 18
                 for row in range(0, h + spacing, spacing):
                     for col in range(0, w + spacing, spacing):
                         dy = row / h
                         dx = abs(col / w - 0.5)
-                        density = max(0, 1 - (dy * 0.7 + dx * 0.6) * 1.3)
-                        if density < 0.06: continue
-                        r = max(1, int(4 * density))
-                        af = density * 0.25
+                        density = max(0, 1 - (dy * 0.9 + dx * 0.8) * 1.5)
+                        if density < 0.08: continue
+                        r = max(1, int(3 * density))
+                        af = density * 0.18
                         dc = tuple(int(bg_col[i] + (dot_col[i]-bg_col[i]) * af) for i in range(3))
                         draw.ellipse([col-r, row-r, col+r, row+r], fill=dc)
             else:
-                bg_col = (242, 236, 224)
-                dot_col = (20, 20, 20)
+                bg_col = (238, 244, 250)
+                dot_col = (2, 132, 199)
                 img = Image.new("RGB", (w, h), bg_col)
                 draw = ImageDraw.Draw(img)
-                spacing = 10
+                spacing = 16
                 for row in range(0, h + spacing, spacing):
                     for col in range(0, w + spacing, spacing):
                         nx = col / w; ny = row / h
-                        density = max(0, (1 - nx * 0.6 - ny * 0.6) * 1.1 - 0.05)
-                        if density < 0.06: continue
-                        r = max(1, int(3 * density))
-                        af = density * 0.4
+                        density = max(0, (1 - nx * 0.55 - ny * 0.7) * 1.0 - 0.08)
+                        if density < 0.07: continue
+                        r = max(1, int(2.5 * density))
+                        af = density * 0.18
                         dc = tuple(int(bg_col[i] + (dot_col[i]-bg_col[i]) * af) for i in range(3))
                         draw.ellipse([col-r, row-r, col+r, row+r], fill=dc)
             ci = ctk.CTkImage(light_image=img, dark_image=img, size=(w, h))
@@ -451,28 +465,26 @@ class ItchyApp(ctk.CTk):
         self.after(200, self._draw_halftone_bg)
 
         # ── HEADER ──
-        hdr=ctk.CTkFrame(self,fg_color=SURF3,corner_radius=0,height=120)
+        hdr=ctk.CTkFrame(self,fg_color=SURFACE,corner_radius=0,height=76)
         hdr.pack(fill="x"); hdr.pack_propagate(False)
 
         # Left: created by
         lft=ctk.CTkFrame(hdr,fg_color="transparent"); lft.place(x=16,rely=0.5,anchor="w")
-        ctk.CTkLabel(lft,text="created by:",font=(MONO_FONT,8),text_color=TEXT_DIM).pack(anchor="w")
-        ctk.CTkLabel(lft,text="M.Mert",font=(MONO_FONT,9,"bold"),text_color=ACCENT).pack(anchor="w")
-        ctk.CTkLabel(lft,text="v1.0",font=(MONO_FONT,8),text_color=TEXT_DIM).pack(anchor="w")
+        ctk.CTkLabel(lft,text="Itchy Downloader",font=("Segoe UI",16,"bold"),text_color=TEXT).pack(anchor="w")
+        ctk.CTkLabel(lft,text="created by M.Mert  -  v1.4",font=("Segoe UI",10),text_color=TEXT_DIM).pack(anchor="w")
 
-        # Center: pixel canvas title
-        self._pixel_canvas = PixelTitleCanvas(hdr, pix=9,
-            bg=SURF3, width=520, height=80)  # halftone-aware
-        self._pixel_canvas.set_dark(self._is_dark)
-        self._pixel_canvas.place(relx=0.5, rely=0.46, anchor="center")
+        self._pixel_canvas = PixelTitleCanvas(hdr, pix=8,
+            bg=SURFACE, width=320, height=58)
+        self._pixel_canvas.set_dark(_IS_DARK)
+        self._pixel_canvas.place(relx=0.5,rely=0.5,anchor="center")
 
 
         # Right: theme toggle
         rgt=ctk.CTkFrame(hdr,fg_color="transparent")
         rgt.place(relx=0.985,rely=0.5,anchor="e")
-        _icon = "[ DARK ]" if self._is_dark else "[ LIGHT]"
+        _icon = "☾" if self._is_dark else "☀"
         self.theme_btn=ctk.CTkButton(rgt,text=_icon,
-            font=(MONO_FONT,9,"bold"),width=72,height=26,corner_radius=4,
+            font=("Segoe UI Symbol",17,"bold"),width=38,height=38,corner_radius=19,
             fg_color=SURF2,hover_color=BORDER,text_color=ACCENT,
             border_color=BORDER,border_width=1,command=self._toggle_theme)
         self.theme_btn.pack()
@@ -483,15 +495,15 @@ class ItchyApp(ctk.CTk):
         ctk.CTkFrame(div_frame,fg_color=ACCENT,corner_radius=0,height=1).pack(fill="x",pady=(1,0))
 
         # ── TABS ──
-        tab_bg=ctk.CTkFrame(self,fg_color=SURF3,corner_radius=0,height=36)
+        tab_bg=ctk.CTkFrame(self,fg_color=SURFACE,corner_radius=0,height=42)
         tab_bg.pack(fill="x"); tab_bg.pack_propagate(False)
         self._tab_btns={}
-        tabs=[("indir","[01] INDIR"),("queue","[02] KUYRUK"),("batch","[03] BATCH"),
-              ("history","[04] GECMIS"),("stats","[05] ISTAT"),("settings","[06] AYARLAR")]
+        tabs=[("indir","INDIR"),("queue","KUYRUK"),("batch","BATCH"),
+              ("history","GECMIS"),("stats","ISTAT"),("settings","AYARLAR")]
         for tid,tlbl in tabs:
             active=(tid=="indir")
             btn=ctk.CTkButton(tab_bg,text=tlbl,
-                font=(MONO_FONT,9,"bold"),width=120,height=34,corner_radius=0,
+                font=("Segoe UI",11,"bold"),width=108,height=36,corner_radius=10,
                 fg_color=SURF2 if active else SURF3,
                 hover_color=SURF2,
                 text_color=ACCENT if active else TEXT_DIM,
@@ -550,6 +562,32 @@ class ItchyApp(ctk.CTk):
         except: pass
 
     # ── Download Page ─────────────────────────────────────────────────────────
+    def _make_collapsible(self, parent, title, open_attr, default_open=False, **pack_kw):
+        outer=ctk.CTkFrame(parent,fg_color=SURF2,corner_radius=12,
+            border_color=BORDER,border_width=1)
+        outer.pack(fill="x",**pack_kw)
+        header=ctk.CTkFrame(outer,fg_color="transparent")
+        header.pack(fill="x",padx=12,pady=8)
+        content=ctk.CTkFrame(outer,fg_color="transparent")
+        setattr(self, open_attr, default_open)
+        toggle=ctk.CTkButton(header,text="",font=("Segoe UI",11,"bold"),
+            fg_color=SURF3,hover_color=SURF2,text_color=ACCENT,
+            border_color=BORDER,border_width=1,height=34,corner_radius=10,
+            command=lambda:self._toggle_section(content,toggle,open_attr,title))
+        toggle.pack(fill="x")
+        self._toggle_section(content,toggle,open_attr,title,force=default_open)
+        return outer,content,toggle
+
+    def _toggle_section(self, content, toggle, open_attr, title, force=None):
+        open_now=(not getattr(self, open_attr, False)) if force is None else force
+        setattr(self, open_attr, open_now)
+        marker="-" if open_now else "+"
+        toggle.configure(text=f"{marker} {title}")
+        if open_now:
+            content.pack(fill="x",padx=12,pady=(0,10))
+        else:
+            content.pack_forget()
+
     def _build_download_page(self, body):
         PAD = dict(padx=28, pady=6)
 
@@ -615,8 +653,12 @@ class ItchyApp(ctk.CTk):
             font=(MONO_FONT,9),text_color=ACCENT,anchor="w")
         self.filesize_lbl.pack(anchor="w",padx=12,pady=(0,8))
 
+        # Advanced options start closed to keep the first screen focused.
+        _,adv_body,_=self._make_collapsible(body,"DETAYLI SECENEKLER", "_advanced_open",
+            default_open=False, padx=28, pady=6)
+
         # Clip card
-        clip_card=rcard(body,"KLiP KESME"); clip_card.pack(fill="x",**PAD)
+        clip_card=rcard(adv_body,"KLiP KESME"); clip_card.pack(fill="x",pady=(0,6))
         cr=ctk.CTkFrame(clip_card,fg_color="transparent"); cr.pack(fill="x",padx=12,pady=(2,10))
         self._clip_chk=ctk.CTkCheckBox(cr,text="AKTiF",
             variable=self._clip_enabled,font=(MONO_FONT,10,"bold"),
@@ -633,7 +675,7 @@ class ItchyApp(ctk.CTk):
         ctk.CTkLabel(cr,text="  [HH:MM:SS]",font=(MONO_FONT,9),text_color=TEXT_DIM).pack(side="left")
 
         # Sub + options row
-        so=ctk.CTkFrame(body,fg_color="transparent"); so.pack(fill="x",**PAD)
+        so=ctk.CTkFrame(adv_body,fg_color="transparent"); so.pack(fill="x",pady=(0,6))
         sub_card=rcard(so,"ALTYAZI"); sub_card.pack(side="left",padx=(0,8))
         si=ctk.CTkFrame(sub_card,fg_color="transparent"); si.pack(padx=12,pady=(2,10))
         ctk.CTkCheckBox(si,text="iNDiR",variable=self._subtitle_var,
@@ -655,7 +697,7 @@ class ItchyApp(ctk.CTk):
         rbtn(oi,text="[M] MiNi MOD",command=self._toggle_mini_mode,small=True).pack(anchor="w",pady=(8,0))
 
         # Save path
-        path_card=rcard(body,"KAYIT KLASORU"); path_card.pack(fill="x",**PAD)
+        path_card=rcard(adv_body,"KAYIT KLASORU"); path_card.pack(fill="x")
         pi=ctk.CTkFrame(path_card,fg_color="transparent"); pi.pack(fill="x",padx=12,pady=(2,10))
         self.path_entry=ctk.CTkEntry(pi,font=(MONO_FONT,11),fg_color=SURF3,border_color=BORDER,
             border_width=1,text_color=TEXT_MID,height=38,corner_radius=6)
@@ -694,36 +736,247 @@ class ItchyApp(ctk.CTk):
         self.progress_bar.set(0); self.progress_bar.pack(fill="x")
 
         # Log
-        self.log_box=ctk.CTkTextbox(body,font=(MONO_FONT,10),fg_color=SURF3,
+        _,log_body,_=self._make_collapsible(body,"ISLEM GUNLUGU", "_log_open",
+            default_open=False, padx=28, pady=(0,4))
+        self.log_box=ctk.CTkTextbox(log_body,font=(MONO_FONT,10),fg_color=SURF3,
             text_color=TEXT_DIM,border_color=BORDER2,border_width=1,corner_radius=6,
             height=90,wrap="word",state="disabled")
-        self.log_box.pack(fill="x",padx=28,pady=(0,4))
+        self.log_box.pack(fill="x")
         ctk.CTkLabel(body,text="// created by M.Mert",
             font=(MONO_FONT,9),text_color=TEXT_DIM,anchor="e").pack(fill="x",padx=28,pady=(0,14))
 
     # ── Quality pills ─────────────────────────────────────────────────────────
+    def _build_download_page(self, body):
+        PAD=dict(padx=24,pady=8)
+        shell=ctk.CTkFrame(body,fg_color="transparent")
+        shell.pack(fill="both",expand=True,padx=22,pady=(18,12))
+        shell.grid_columnconfigure(0,weight=3,uniform="main")
+        shell.grid_columnconfigure(1,weight=2,uniform="main")
+        left=ctk.CTkFrame(shell,fg_color="transparent")
+        right=ctk.CTkFrame(shell,fg_color="transparent")
+        left.grid(row=0,column=0,sticky="nsew",padx=(0,10))
+        right.grid(row=0,column=1,sticky="nsew",padx=(10,0))
+
+        uc=rcard(left,"Video linki"); uc.pack(fill="x",**PAD)
+        ui=ctk.CTkFrame(uc,fg_color="transparent"); ui.pack(fill="x",padx=14,pady=(4,12))
+        self.url_entry=ctk.CTkEntry(ui,placeholder_text="youtube.com/watch?v=... yapistir",
+            font=("Segoe UI",13),fg_color=SURF3,border_color=BORDER,border_width=1,
+            text_color=TEXT,placeholder_text_color=TEXT_DIM,height=44,corner_radius=12)
+        self.url_entry.pack(side="left",fill="x",expand=True,padx=(0,10))
+        self.fetch_btn=rbtn(ui,text="Analiz Et",command=self._fetch_info,accent=True,width=128)
+        self.fetch_btn.pack(side="left")
+        self._setup_drag_drop(self.url_entry)
+        ctk.CTkButton(uc,text="+ Kuyruga ekle",font=("Segoe UI",11,"bold"),
+            fg_color="transparent",hover_color=SURF2,text_color=TEXT_DIM,
+            height=24,corner_radius=8,border_width=0,
+            command=self._add_to_queue_from_url).pack(anchor="e",padx=14,pady=(0,10))
+
+        pc=rcard(left,"Hazir profiller"); pc.pack(fill="x",**PAD)
+        pr=ctk.CTkFrame(pc,fg_color="transparent"); pr.pack(fill="x",padx=14,pady=(4,12))
+        for title,mode,prefix in [("MP3 Muzik","mp3","320k"),("MP4 720p","mp4","720p"),
+                                  ("MP4 1080p","mp4","1080p"),("Sadece Ses","m4a","256k")]:
+            ctk.CTkButton(pr,text=title,font=("Segoe UI",11,"bold"),
+                fg_color=SURF3,hover_color=SURF2,text_color=TEXT_MID,
+                border_color=BORDER,border_width=1,height=34,corner_radius=10,
+                command=lambda m=mode,p=prefix:self._apply_profile(m,p)
+                ).pack(side="left",fill="x",expand=True,padx=(0,8))
+
+        fq=ctk.CTkFrame(left,fg_color="transparent"); fq.pack(fill="x",**PAD)
+        fc=rcard(fq,"Format"); fc.pack(side="left",fill="x",expand=True,padx=(0,8))
+        seg=ctk.CTkFrame(fc,fg_color=SURF3,corner_radius=12,border_color=BORDER2,border_width=1)
+        seg.pack(fill="x",padx=14,pady=(4,12))
+        self.mode_var=ctk.StringVar(value="mp4")
+        self.mp3_btn=ctk.CTkButton(seg,text="MP3",font=("Segoe UI",11,"bold"),
+            height=36,corner_radius=10,fg_color=SURF3,hover_color=SURF2,
+            text_color=TEXT_DIM,border_width=0,command=lambda:self._set_mode("mp3"))
+        self.mp3_btn.pack(side="left",fill="x",expand=True,padx=(4,2),pady=4)
+        self.mp4_btn=ctk.CTkButton(seg,text="MP4",font=("Segoe UI",11,"bold"),
+            height=36,corner_radius=10,fg_color=ACCENT,hover_color=ACCENT2,
+            text_color=BG,border_width=0,command=lambda:self._set_mode("mp4"))
+        self.mp4_btn.pack(side="left",fill="x",expand=True,padx=2,pady=4)
+        self.m4a_btn=ctk.CTkButton(seg,text="M4A",font=("Segoe UI",11,"bold"),
+            height=36,corner_radius=10,fg_color=SURF3,hover_color=SURF2,
+            text_color=TEXT_DIM,border_width=0,command=lambda:self._set_mode("m4a"))
+        self.m4a_btn.pack(side="left",fill="x",expand=True,padx=(2,4),pady=4)
+
+        qc=rcard(fq,"Kalite"); qc.pack(side="left",fill="x",expand=True,padx=(8,0))
+        self._qual_pill_host=ctk.CTkFrame(qc,fg_color="transparent")
+        self._qual_pill_host.pack(fill="x",padx=14,pady=(4,8))
+        self.quality_var=ctk.StringVar(value="-- URL GIRIN --")
+        self._build_quality_pills()
+        self.filesize_lbl=ctk.CTkLabel(qc,textvariable=self._filesize_var,
+            font=("Segoe UI",10),text_color=ACCENT,anchor="w")
+        self.filesize_lbl.pack(anchor="w",padx=14,pady=(0,12))
+
+        _,adv_body,_=self._make_collapsible(left,"Detayli secenekler","_advanced_open",
+            default_open=False,padx=24,pady=8)
+        clip_card=rcard(adv_body,"Klip kesme"); clip_card.pack(fill="x",pady=(0,8))
+        cr=ctk.CTkFrame(clip_card,fg_color="transparent"); cr.pack(fill="x",padx=14,pady=(4,12))
+        self._clip_chk=ctk.CTkCheckBox(cr,text="Aktif",variable=self._clip_enabled,
+            font=("Segoe UI",11,"bold"),text_color=TEXT_MID,fg_color=ACCENT,
+            hover_color=ACCENT2,checkmark_color=BG,command=self._toggle_clip_ui)
+        self._clip_chk.pack(side="left",padx=(0,16))
+        ctk.CTkEntry(cr,textvariable=self._clip_start,placeholder_text="Baslangic 00:00:00",
+            font=("Segoe UI",11),fg_color=SURF3,border_color=BORDER,text_color=TEXT,
+            height=34,corner_radius=10,width=150).pack(side="left",padx=(0,10))
+        ctk.CTkEntry(cr,textvariable=self._clip_end,placeholder_text="Bitis 00:00:00",
+            font=("Segoe UI",11),fg_color=SURF3,border_color=BORDER,text_color=TEXT,
+            height=34,corner_radius=10,width=150).pack(side="left")
+
+        so=ctk.CTkFrame(adv_body,fg_color="transparent"); so.pack(fill="x",pady=(0,8))
+        sub_card=rcard(so,"Altyazi"); sub_card.pack(side="left",fill="both",expand=True,padx=(0,8))
+        si=ctk.CTkFrame(sub_card,fg_color="transparent"); si.pack(fill="x",padx=14,pady=(4,12))
+        ctk.CTkCheckBox(si,text="Altyazi indir",variable=self._subtitle_var,
+            font=("Segoe UI",11),text_color=TEXT_MID,fg_color=ACCENT,hover_color=ACCENT2,
+            checkmark_color=BG).pack(side="left")
+        ctk.CTkOptionMenu(si,variable=self._sub_lang_var,values=["tr","en","de","fr","es","ja","ko","ar"],
+            font=("Segoe UI",11),fg_color=SURF3,button_color=ACCENT,button_hover_color=ACCENT2,
+            text_color=TEXT,dropdown_fg_color=SURF2,dropdown_text_color=TEXT,
+            width=82,height=30,corner_radius=10).pack(side="right")
+
+        opts_card=rcard(so,"Secenekler"); opts_card.pack(side="left",fill="both",expand=True,padx=(8,0))
+        oi=ctk.CTkFrame(opts_card,fg_color="transparent"); oi.pack(fill="x",padx=14,pady=(4,12))
+        ctk.CTkCheckBox(oi,text="Indirme sonrasi klasoru ac",
+            variable=self._open_folder_var,font=("Segoe UI",11),text_color=TEXT_MID,
+            fg_color=ACCENT,hover_color=ACCENT2,checkmark_color=BG).pack(anchor="w")
+        rbtn(oi,text="Mini Mod",command=self._toggle_mini_mode,small=True).pack(anchor="w",pady=(8,0))
+
+        path_card=rcard(adv_body,"Kayit klasoru"); path_card.pack(fill="x")
+        pi=ctk.CTkFrame(path_card,fg_color="transparent"); pi.pack(fill="x",padx=14,pady=(4,12))
+        self.path_entry=ctk.CTkEntry(pi,font=("Segoe UI",11),fg_color=SURF3,border_color=BORDER,
+            border_width=1,text_color=TEXT_MID,height=38,corner_radius=10)
+        self.path_entry.insert(0,self._dl_path)
+        self.path_entry.pack(side="left",fill="x",expand=True,padx=(0,8))
+        rbtn(pi,text="Sec",command=self._browse_path,small=True,width=82).pack(side="left")
+
+        dl_row=ctk.CTkFrame(left,fg_color="transparent"); dl_row.pack(fill="x",**PAD)
+        self.dl_btn=ctk.CTkButton(dl_row,text="Indir",font=("Segoe UI",17,"bold"),
+            fg_color=ACCENT,hover_color=ACCENT2,text_color=BG,border_color=ACCENT,
+            border_width=1,height=54,corner_radius=14,command=self._start_download,state="disabled")
+        self.dl_btn.pack(side="left",fill="x",expand=True,padx=(0,10))
+        self.pause_btn=rbtn(dl_row,text="Duraklat",command=self._toggle_pause,
+            small=False,width=120,state="disabled")
+        self.pause_btn.pack(side="left",padx=(0,8))
+        self.cancel_dl_btn=rbtn(dl_row,text="Iptal",command=self._cancel_download,
+            danger=True,width=100,state="disabled")
+        self.cancel_dl_btn.pack(side="left")
+
+        prog=rcard(left,"Indirme durumu"); prog.pack(fill="x",**PAD)
+        pi2=ctk.CTkFrame(prog,fg_color="transparent"); pi2.pack(fill="x",padx=14,pady=(4,12))
+        sr=ctk.CTkFrame(pi2,fg_color="transparent"); sr.pack(fill="x",pady=(0,8))
+        self.status_lbl=ctk.CTkLabel(sr,text="Sistem hazir",
+            font=("Segoe UI",11),text_color=TEXT_DIM,anchor="w")
+        self.status_lbl.pack(side="left",fill="x",expand=True)
+        self.pct_lbl=ctk.CTkLabel(sr,textvariable=self._pct_var,
+            font=("Segoe UI",12,"bold"),text_color=ACCENT,anchor="e",width=55)
+        self.pct_lbl.pack(side="right")
+        self.progress_bar=ctk.CTkProgressBar(pi2,fg_color=SURF3,progress_color=ACCENT,
+            height=12,corner_radius=6,border_color=BORDER,border_width=1)
+        self.progress_bar.set(0); self.progress_bar.pack(fill="x")
+
+        _,log_body,_=self._make_collapsible(left,"Islem gunlugu","_log_open",
+            default_open=False,padx=24,pady=8)
+        self.log_box=ctk.CTkTextbox(log_body,font=("Segoe UI",10),fg_color=SURF3,
+            text_color=TEXT_DIM,border_color=BORDER2,border_width=1,corner_radius=10,
+            height=90,wrap="word",state="disabled")
+        self.log_box.pack(fill="x")
+
+        self.info_card=rcard(right,"Video onizleme"); self.info_card.pack(fill="x",**PAD)
+        ir=ctk.CTkFrame(self.info_card,fg_color="transparent"); ir.pack(fill="x",padx=14,pady=(4,14))
+        self.thumb_lbl=ctk.CTkLabel(ir,text="",width=260,height=146); self.thumb_lbl.pack(fill="x")
+        self._draw_placeholder_thumb()
+        self.vid_title_lbl=ctk.CTkLabel(ir,text="URL girip analiz edin",
+            font=("Segoe UI",15,"bold"),text_color=TEXT,anchor="w",wraplength=360,justify="left")
+        self.vid_title_lbl.pack(anchor="w",fill="x",pady=(12,0))
+        self.vid_meta_lbl=ctk.CTkLabel(ir,text="",font=("Segoe UI",11),text_color=TEXT_DIM,anchor="w")
+        self.vid_meta_lbl.pack(anchor="w",fill="x",pady=(6,0))
+
+        summary=rcard(right,"Indirme ozeti"); summary.pack(fill="x",**PAD)
+        self.summary_frame=ctk.CTkFrame(summary,fg_color="transparent")
+        self.summary_frame.pack(fill="x",padx=14,pady=(4,14))
+        self.summary_labels={}
+        for key,label in [("format","Format"),("quality","Kalite"),("path","Kayit")]:
+            row=ctk.CTkFrame(self.summary_frame,fg_color="transparent")
+            row.pack(fill="x",pady=4)
+            ctk.CTkLabel(row,text=label,font=("Segoe UI",11),text_color=TEXT_DIM,width=70,
+                anchor="w").pack(side="left")
+            val=ctk.CTkLabel(row,text="-",font=("Segoe UI",11,"bold"),text_color=TEXT,
+                anchor="e",wraplength=270,justify="right")
+            val.pack(side="right",fill="x",expand=True)
+            self.summary_labels[key]=val
+
+        recent=rcard(right,"Son indirilenler"); recent.pack(fill="x",**PAD)
+        self.recent_frame=ctk.CTkFrame(recent,fg_color="transparent")
+        self.recent_frame.pack(fill="x",padx=14,pady=(4,14))
+        self._refresh_recent_downloads()
+        self._refresh_download_summary()
+
     def _build_quality_pills(self):
         for w in self._qual_pill_host.winfo_children(): w.destroy()
         vals = self._quality_values
         pairs = vals if (vals and isinstance(vals[0], tuple)) else [(v,v) for v in vals]
-        for lbl,fid in pairs:
-            is_sel=(lbl==self.quality_var.get())
-            pill=ctk.CTkButton(self._qual_pill_host,text=lbl,
-                font=(MONO_FONT,9,"bold" if is_sel else "normal"),
-                height=28,corner_radius=14,
-                fg_color=SURF3 if not is_sel else ACCENT,
-                hover_color=SURF2 if not is_sel else ACCENT2,
-                text_color=ACCENT if not is_sel else BG,
-                border_color=ACCENT if not is_sel else ACCENT,
-                border_width=1,
-                command=lambda l=lbl:self._select_quality(l))
-            pill.pack(side="left",padx=(0,5),pady=2)
+        labels=[lbl for lbl,_ in pairs] or ["-- URL GIRIN --"]
+        if self.quality_var.get() not in labels:
+            self.quality_var.set(labels[0])
+        self.quality_menu=ctk.CTkOptionMenu(self._qual_pill_host,
+            variable=self.quality_var,values=labels,command=self._select_quality,
+            font=(MONO_FONT,10,"bold"),fg_color=SURF3,button_color=ACCENT,
+            button_hover_color=ACCENT2,text_color=TEXT,
+            dropdown_fg_color=SURF2,dropdown_text_color=TEXT,
+            width=260,height=34,corner_radius=10)
+        self.quality_menu.pack(side="left",fill="x",expand=True)
+        self._refresh_download_summary()
+
+    def _apply_profile(self, mode, quality_prefix):
+        self._preferred_quality_prefix=quality_prefix
+        self._set_mode(mode)
+        if self._formats:
+            match=next((lbl for lbl,_ in self._formats if lbl.startswith(quality_prefix)),None)
+            if match: self._select_quality(match)
+        self._refresh_download_summary()
+
+    def _refresh_download_summary(self):
+        if not hasattr(self,"summary_labels"): return
+        if not all(k in self.summary_labels for k in ("format","quality","path")): return
+        try:
+            if not all(self.summary_labels[k].winfo_exists() for k in ("format","quality","path")):
+                return
+        except Exception:
+            return
+        self.summary_labels["format"].configure(text=getattr(self,"mode_var",ctk.StringVar(value="mp4")).get().upper())
+        self.summary_labels["quality"].configure(text=getattr(self,"quality_var",ctk.StringVar(value="-")).get())
+        path=self.path_entry.get() if hasattr(self,"path_entry") else self._dl_path
+        shown=path if len(path)<=42 else "..." + path[-39:]
+        self.summary_labels["path"].configure(text=shown)
+
+    def _refresh_recent_downloads(self):
+        if not hasattr(self,"recent_frame") or self.recent_frame is None: return
+        try:
+            if not self.recent_frame.winfo_exists(): return
+        except Exception:
+            return
+        for w in self.recent_frame.winfo_children(): w.destroy()
+        if not self._history:
+            ctk.CTkLabel(self.recent_frame,text="Henuz indirme yok.",
+                font=("Segoe UI",11),text_color=TEXT_DIM).pack(anchor="w")
+            return
+        for rec in reversed(self._history[-3:]):
+            row=ctk.CTkFrame(self.recent_frame,fg_color=SURF3,corner_radius=10,
+                border_color=BORDER,border_width=1)
+            row.pack(fill="x",pady=(0,8))
+            ctk.CTkLabel(row,text=rec.get("title","?")[:42],
+                font=("Segoe UI",11,"bold"),text_color=TEXT,anchor="w").pack(
+                fill="x",padx=10,pady=(8,2))
+            ctk.CTkLabel(row,text=f"{rec.get('mode','').upper()}  •  {rec.get('quality','')}  •  {rec.get('date','')}",
+                font=("Segoe UI",10),text_color=TEXT_DIM,anchor="w").pack(
+                fill="x",padx=10,pady=(0,8))
 
     def _select_quality(self,label):
         self.quality_var.set(label); self._build_quality_pills()
         if self._formats:
             self.dl_btn.configure(state="normal")
             self._estimate_filesize(label)
+        self._refresh_download_summary()
 
     def _estimate_filesize(self,label):
         """Estimate file size based on quality label and duration."""
@@ -751,15 +1004,18 @@ class ItchyApp(ctk.CTk):
         self._formats=build_format_list(info,self.mode_var.get())
         if self._formats:
             self._quality_values=self._formats
-            self.quality_var.set(self._formats[0][0])
+            preferred=getattr(self,"_preferred_quality_prefix","")
+            selected=next((lbl for lbl,_ in self._formats if preferred and lbl.startswith(preferred)),self._formats[0][0])
+            self.quality_var.set(selected)
             self.dl_btn.configure(state="normal")
-            self._estimate_filesize(self._formats[0][0])
+            self._estimate_filesize(selected)
         else:
             self._quality_values=[("-- FORMAT YOK --","")]
             self.quality_var.set("-- FORMAT YOK --")
             self.dl_btn.configure(state="disabled")
             self._filesize_var.set("")
         self._build_quality_pills()
+        self._refresh_download_summary()
 
     # ── Queue Page ────────────────────────────────────────────────────────────
     def _build_queue_page(self, body):
@@ -1034,11 +1290,13 @@ class ItchyApp(ctk.CTk):
                              border_color=BORDER,border_width=1,**kw)
 
     def _draw_placeholder_thumb(self):
-        bg=(6,21,20) if _IS_DARK else (224,232,255)
-        fg=(0,80,60) if _IS_DARK else (0,83,200)
-        img=Image.new("RGB",(142,80),color=bg); draw=ImageDraw.Draw(img)
-        cx,cy=71,40; draw.polygon([(cx-12,cy-14),(cx-12,cy+14),(cx+16,cy)],fill=fg)
-        ci=ctk.CTkImage(light_image=img,dark_image=img,size=(142,80))
+        bg=(15,23,36) if _IS_DARK else (232,240,250)
+        fg=(56,189,248) if _IS_DARK else (2,132,199)
+        size=(260,146) if getattr(self,"thumb_lbl",None) else (142,80)
+        img=Image.new("RGB",size,color=bg); draw=ImageDraw.Draw(img)
+        cx,cy=size[0]//2,size[1]//2
+        draw.polygon([(cx-16,cy-20),(cx-16,cy+20),(cx+24,cy)],fill=fg)
+        ci=ctk.CTkImage(light_image=img,dark_image=img,size=size)
         self.thumb_lbl.configure(image=ci,text=""); self._thumb_ref=ci
 
     def _set_mode(self,mode):
@@ -1047,6 +1305,7 @@ class ItchyApp(ctk.CTk):
             if m==mode: btn.configure(fg_color=ACCENT,text_color=BG,hover_color=ACCENT2)
             else: btn.configure(fg_color=SURF3,text_color=TEXT_DIM,hover_color=SURF2)
         if self._info: self._populate_quality(self._info)
+        self._refresh_download_summary()
 
     def _log(self,msg):
         self.log_box.configure(state="normal")
@@ -1054,7 +1313,7 @@ class ItchyApp(ctk.CTk):
         self.log_box.see("end"); self.log_box.configure(state="disabled")
 
     def _status(self,msg,color=None):
-        self.status_lbl.configure(text=f"// {msg}",text_color=color or TEXT_DIM)
+        self.status_lbl.configure(text=msg,text_color=color or TEXT_DIM)
 
     def _set_progress(self,val,pct_str=""):
         self.progress_bar.set(val); self._pct_var.set(pct_str)
@@ -1065,6 +1324,7 @@ class ItchyApp(ctk.CTk):
         if folder:
             self._dl_path=folder
             self.path_entry.delete(0,"end"); self.path_entry.insert(0,folder)
+            self._refresh_download_summary()
 
     def _toggle_clip_ui(self): pass
 
@@ -1104,14 +1364,14 @@ class ItchyApp(ctk.CTk):
         if not url: self._log("URL BOS OLAMAZ."); return
         self.url_entry.delete(0,"end"); self.url_entry.insert(0,url)
         self._fetching=True; self._fetch_stop.clear()
-        self.fetch_btn.configure(text="[X] iPTAL",fg_color=SURF3,
+        self.fetch_btn.configure(text="Iptal",fg_color=SURF3,
             hover_color=SURF2,text_color=RED,border_color=RED,border_width=1)
         self.dl_btn.configure(state="disabled")
         self._draw_placeholder_thumb()
-        self.vid_title_lbl.configure(text="// ANALiZ EDiLiYOR...",text_color=TEXT_DIM)
+        self.vid_title_lbl.configure(text="Analiz ediliyor...",text_color=TEXT_DIM)
         self.vid_meta_lbl.configure(text="")
         self._log(f"ANALIZ: {url[:65]}...")
-        self._status(f"ANALiZ EDiLiYOR... (max {FETCH_TIMEOUT}s)",YELLOW)
+        self._status(f"Analiz ediliyor... (max {FETCH_TIMEOUT}s)",YELLOW)
         threading.Thread(target=self._fetch_thread,args=(url,),daemon=True).start()
 
     def _fetch_thread(self,url):
@@ -1124,7 +1384,7 @@ class ItchyApp(ctk.CTk):
 
     def _reset_fetch_btn(self):
         self._fetching=False
-        self.fetch_btn.configure(text="[ ANALiZ ET ]",fg_color=ACCENT,
+        self.fetch_btn.configure(text="Analiz Et",fg_color=ACCENT,
             hover_color=ACCENT2,border_width=0,text_color=BG)
 
     def _on_fetch_done(self,info):
@@ -1139,17 +1399,24 @@ class ItchyApp(ctk.CTk):
             text_color=TEXT_MID)
         self._populate_quality(info)
         self._log(f"OK '{title[:55]}' HAZIR.")
-        self._status("VIDEO BULUNDU — KALiTE SECIN VE iNDiRiN.",GREEN)
+        self._status("Video bulundu. Kalite secip indirebilirsiniz.",GREEN)
         vid_id=info.get("id") or ""; thumb_url=info.get("thumbnail") or ""
-        threading.Thread(target=self._load_thumbnail,args=(thumb_url,vid_id),daemon=True).start()
+        thumbnails=info.get("thumbnails") or []
+        threading.Thread(target=self._load_thumbnail,
+            args=(thumb_url,vid_id,thumbnails),daemon=True).start()
 
-    def _load_thumbnail(self,url,vid_id=""):
+    def _load_thumbnail(self,url,vid_id="",thumbnails=None):
         candidates=[]
         if url: candidates.append(url)
+        for item in sorted(thumbnails or [], key=lambda x: x.get("width",0), reverse=True):
+            tu=item.get("url")
+            if tu: candidates.append(tu)
         if vid_id:
             candidates+=[f"https://i.ytimg.com/vi/{vid_id}/mqdefault.jpg",
                           f"https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg",
+                          f"https://i.ytimg.com/vi/{vid_id}/maxresdefault.jpg",
                           f"https://img.youtube.com/vi/{vid_id}/mqdefault.jpg"]
+        candidates=list(dict.fromkeys(candidates))
         headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0",
                  "Accept":"image/avif,image/webp,image/*,*/*;q=0.8",
                  "Referer":"https://www.youtube.com/"}
@@ -1164,21 +1431,26 @@ class ItchyApp(ctk.CTk):
                 img=Image.open(io.BytesIO(data)).convert("RGB")
                 w,h=img.size; th=int(w*9/16)
                 if th<h: img=img.crop((0,(h-th)//2,w,(h-th)//2+th))
-                img=img.resize((142,80),Image.LANCZOS)
-                ci=ctk.CTkImage(light_image=img,dark_image=img,size=(142,80))
-                self.after(0,self.thumb_lbl.configure,{"image":ci,"text":""})
-                self._thumb_ref=ci; return
+                img=img.resize((260,146),Image.LANCZOS)
+                self.after(0,self._set_thumbnail_image,img)
+                return
             except: continue
+        self.after(0,self._log,"THUMBNAIL ALINAMADI.")
+
+    def _set_thumbnail_image(self,img):
+        ci=ctk.CTkImage(light_image=img,dark_image=img,size=(260,146))
+        self.thumb_lbl.configure(image=ci,text="")
+        self._thumb_ref=ci
 
     def _on_fetch_cancelled(self):
         self._reset_fetch_btn()
-        self.vid_title_lbl.configure(text="// ANALiZ iPTAL EDiLDi.",text_color=TEXT_DIM)
-        self._log("ANALIZ IPTAL."); self._status("ANALiZ iPTAL EDiLDi.",ORANGE)
+        self.vid_title_lbl.configure(text="Analiz iptal edildi.",text_color=TEXT_DIM)
+        self._log("ANALIZ IPTAL."); self._status("Analiz iptal edildi.",ORANGE)
 
     def _on_fetch_error(self,err):
         self._reset_fetch_btn()
-        self.vid_title_lbl.configure(text="// VIDEO ALINAMADI.",text_color=RED)
-        self._log(f"HATA: {err[:120]}"); self._status("VIDEO ALINAMADI.",RED)
+        self.vid_title_lbl.configure(text="Video alinamadi.",text_color=RED)
+        self._log(f"HATA: {err[:120]}"); self._status("Video alinamadi.",RED)
 
     # ── Download ──────────────────────────────────────────────────────────────
     def _start_download(self):
@@ -1195,9 +1467,9 @@ class ItchyApp(ctk.CTk):
         sub=self._subtitle_var.get(); sub_lang=self._sub_lang_var.get()
         self._dl_cancelled=False; self._dl_paused=False
         self._dl_pause_lock.set(); self._downloading=True
-        self.dl_btn.configure(state="disabled",text="iNDiRiLiYOR...")
+        self.dl_btn.configure(state="disabled",text="Indiriliyor...")
         self.fetch_btn.configure(state="disabled")
-        self.pause_btn.configure(state="normal",text="[P] DURDUR")
+        self.pause_btn.configure(state="normal",text="Duraklat")
         self.cancel_dl_btn.configure(state="normal")
         self._set_progress(0,"")
         self._log(f"iNDiRME >> {mode.upper()} / {sel_label}")
@@ -1210,14 +1482,14 @@ class ItchyApp(ctk.CTk):
         if not self._downloading: return
         if self._dl_paused:
             self._dl_paused=False; self._dl_pause_lock.set()
-            self.pause_btn.configure(text="[P] DURDUR",fg_color=SURF3,text_color=TEXT_MID,
+            self.pause_btn.configure(text="Duraklat",fg_color=SURF3,text_color=TEXT_MID,
                 border_color=BORDER)
-            self._status("DEVAM EDiYOR...",YELLOW); self._log("DEVAM ETTiRiLDi.")
+            self._status("Devam ediyor...",YELLOW); self._log("DEVAM ETTiRiLDi.")
         else:
             self._dl_paused=True; self._dl_pause_lock.clear()
-            self.pause_btn.configure(text="[R] DEVAM",fg_color=SURF2,text_color=GREEN,
+            self.pause_btn.configure(text="Devam",fg_color=SURF2,text_color=GREEN,
                 border_color=GREEN)
-            self._status("DURAKLATILDI.",ORANGE); self._log("DURAKLATILDI.")
+            self._status("Duraklatildi.",ORANGE); self._log("DURAKLATILDI.")
 
     def _cancel_download(self):
         if not self._downloading: return
@@ -1225,7 +1497,7 @@ class ItchyApp(ctk.CTk):
         if self._ydl_instance:
             try: self._ydl_instance.params['abort']=True
             except: pass
-        self._log("iPTAL EDiLiYOR..."); self._status("iPTAL EDiLiYOR...",RED)
+        self._log("iPTAL EDiLiYOR..."); self._status("Iptal ediliyor...",RED)
         self.after(3000,self._force_cancel_check)
 
     def _force_cancel_check(self):
@@ -1299,10 +1571,10 @@ class ItchyApp(ctk.CTk):
             pct=(dl/total) if total else 0
             self.after(0,self._set_progress,pct,f"{pct*100:.0f}%")
             self.after(0,self._status,
-                f"iNDiRiLiYOR... {spd/1024/1024:.1f}MB/s {'ETA:'+str(eta)+'s' if eta else ''}",YELLOW)
+                f"Indiriliyor... {spd/1024/1024:.1f}MB/s {'ETA:'+str(eta)+'s' if eta else ''}",YELLOW)
         elif s=="finished":
             self.after(0,self._set_progress,0.99,"99%")
-            self.after(0,self._status,"iSLENiYOR (ffmpeg)...",YELLOW)
+            self.after(0,self._status,"Isleniyor (ffmpeg)...",YELLOW)
 
     def _reset_dl_ui(self):
         self._downloading=False
@@ -1328,6 +1600,33 @@ class ItchyApp(ctk.CTk):
 
     def _on_download_error(self,err):
         self._set_progress(0,""); self._status("iNDiRME BASARISIZ.",RED)
+        self._log(f"HATA: {err[:120]}"); self._reset_dl_ui()
+
+    def _reset_dl_ui(self):
+        self._downloading=False
+        self.dl_btn.configure(state="normal",text="Indir")
+        self.fetch_btn.configure(state="normal")
+        self.pause_btn.configure(state="disabled",text="Duraklat",
+            fg_color=SURF3,text_color=TEXT_MID,border_color=BORDER)
+        self.cancel_dl_btn.configure(state="disabled")
+
+    def _on_download_done(self):
+        self._set_progress(1.0,"100%"); self._status("Indirme tamamlandi.",GREEN)
+        folder=self.path_entry.get(); self._last_dl_folder=folder
+        self._log(f"OK >> {folder}")
+        self._reset_dl_ui(); self._play_done_sound()
+        self._tray_notify("ITCHY","Indirme tamamlandi!")
+        self._send_toast("ITCHY","Indirme tamamlandi!","Dosya klasore kaydedildi.")
+        self._discord_set_idle()
+        self._refresh_recent_downloads()
+        if self._open_folder_var.get(): self._open_folder(folder)
+
+    def _on_download_cancelled(self):
+        self._set_progress(0,""); self._status("Iptal edildi.",ORANGE)
+        self._log("iPTAL."); self._reset_dl_ui()
+
+    def _on_download_error(self,err):
+        self._set_progress(0,""); self._status("Indirme basarisiz.",RED)
         self._log(f"HATA: {err[:120]}"); self._reset_dl_ui()
 
     def _open_folder(self,path):
@@ -1588,13 +1887,16 @@ class ItchyApp(ctk.CTk):
 
     # ── Settings actions ──────────────────────────────────────────────────────
     def _update_ytdlp(self):
+        if getattr(sys, "frozen", False):
+            self._log("EXE modunda manuel guncelleme: yt-dlp'yi pip ile guncelleyin.")
+            return
         self._log("YT-DLP GUNCELLENIYOR...")
         def worker():
             try:
-                import subprocess
                 r=subprocess.run([sys.executable,"-m","pip","install","-U","yt-dlp",
-                                   "--break-system-packages","--quiet"],
-                    capture_output=True,text=True,timeout=60)
+                                   "--quiet"],
+                    capture_output=True,text=True,timeout=60,
+                    creationflags=0x08000000 if sys.platform=="win32" else 0)
                 msg="YT-DLP GUNCELLENDi!" if r.returncode==0 else f"HATA: {r.stderr[:60]}"
             except Exception as e: msg=f"HATA: {e}"
             self.after(0,self._log,msg)
@@ -1716,7 +2018,7 @@ class ItchyApp(ctk.CTk):
                 state="Indiriliyor...",
                 details=title[:80] if title else "Video indiriliyor",
                 large_image="itchy_logo",
-                large_text="ITCHY YouTube Downloader v1.0",
+                large_text="ITCHY YouTube Downloader v1.4",
                 start=int(time.time())
             )
         except: pass
@@ -1728,7 +2030,7 @@ class ItchyApp(ctk.CTk):
                 state="Bekliyor...",
                 details="ITCHY YouTube Downloader",
                 large_image="itchy_logo",
-                large_text="ITCHY v1.0"
+                large_text="ITCHY v1.4"
             )
         except: pass
 
@@ -1766,23 +2068,24 @@ class ItchyApp(ctk.CTk):
     # ── Auto yt-dlp update check ───────────────────────────────────────────────
     def _auto_check_ytdlp(self):
         """Silently check if yt-dlp has an update available on startup."""
+        # Skip in frozen EXE — subprocess would open new instance
+        if getattr(sys, "frozen", False): return
         try:
-            time.sleep(3)  # wait for app to fully load
+            time.sleep(3)
             result = subprocess.run(
                 [sys.executable, "-m", "pip", "index", "versions", "yt-dlp"],
-                capture_output=True, text=True, timeout=15
+                capture_output=True, text=True, timeout=15,
+                creationflags=0x08000000 if sys.platform=="win32" else 0  # CREATE_NO_WINDOW
             )
             if result.returncode == 0:
-                # Parse latest version
                 out = result.stdout
-                import re
                 match = re.search(r"Available versions: ([^ ,]+)", out)
                 if match:
                     latest = match.group(1).strip()
-                    # Get installed version
                     ver_result = subprocess.run(
                         [sys.executable, "-m", "pip", "show", "yt-dlp"],
-                        capture_output=True, text=True, timeout=10
+                        capture_output=True, text=True, timeout=10,
+                        creationflags=0x08000000 if sys.platform=="win32" else 0
                     )
                     inst_match = re.search(r"Version: ([^ ]+)", ver_result.stdout)
                     if inst_match:
@@ -1807,8 +2110,10 @@ class ItchyApp(ctk.CTk):
 
         global _IS_DARK
         self._is_dark = not self._is_dark
-        _IS_DARK = self._is_dark
+        _IS_DARK = self._is_dark          # update global BEFORE _ap and _build_ui
+        ctk.set_appearance_mode("dark" if self._is_dark else "light")
         _ap(DARK if self._is_dark else LIGHT)
+        _IS_DARK = self._is_dark          # re-set after _ap to be safe
 
         self.withdraw()
 
@@ -1843,6 +2148,11 @@ class ItchyApp(ctk.CTk):
         self._batch_file=ctk.StringVar(value="")
         self._filesize_var=ctk.StringVar(value="")
         self._hist_search_var=ctk.StringVar(value="")
+        self._advanced_open=False
+        self._log_open=False
+        self._preferred_quality_prefix=""
+        self.summary_labels={}
+        self.recent_frame=None
 
         self.configure(fg_color=BG)
         self._build_ui()
