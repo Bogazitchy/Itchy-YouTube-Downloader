@@ -8,7 +8,7 @@ Modern arayuzlu Windows masaustu uygulamasi. YouTube videolarini MP3, MP4 ve M4A
 
 ## One Cikanlar
 
-- Modern dark/light tema ve tema ile uyumlu piksel `ITCHY` logosu
+- Modern dark/light tema ve tema
 - Iki kolonlu ana ekran: indirme kontrolleri solda, video onizleme ve ozet sagda
 - Hazir profiller: `MP3 Muzik`, `MP4 720p`, `MP4 1080p`, `Sadece Ses`
 - Analiz sonrasi video basligi, kanal, sure, izlenme ve thumbnail gosterimi
