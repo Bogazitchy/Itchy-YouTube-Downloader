@@ -4,7 +4,7 @@
 ; ─────────────────────────────────────────────────────────────────
 
 #define AppName      "Itchy YouTube Downloader"
-#define AppVersion   "1.4"
+#define AppVersion   "2.0"
 #define AppPublisher "Itchy"
 #define AppExeName   "ItchyDownloader.exe"
 

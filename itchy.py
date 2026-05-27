@@ -302,7 +302,7 @@ class PixelTitleCanvas(tk.Canvas):
 class ItchyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("ITCHY YOUTUBE DOWNLOADER v1.4")
+        self.title("ITCHY YOUTUBE DOWNLOADER v2.0")
         self.geometry("1080x840")
         self.minsize(900, 720)
         self.resizable(True, True)
@@ -471,7 +471,7 @@ class ItchyApp(ctk.CTk):
         # Left: created by
         lft=ctk.CTkFrame(hdr,fg_color="transparent"); lft.place(x=16,rely=0.5,anchor="w")
         ctk.CTkLabel(lft,text="Itchy Downloader",font=("Segoe UI",16,"bold"),text_color=TEXT).pack(anchor="w")
-        ctk.CTkLabel(lft,text="created by M.Mert  -  v1.4",font=("Segoe UI",10),text_color=TEXT_DIM).pack(anchor="w")
+        ctk.CTkLabel(lft,text="created by M.Mert  -  v2.0",font=("Segoe UI",10),text_color=TEXT_DIM).pack(anchor="w")
 
         self._pixel_canvas = PixelTitleCanvas(hdr, pix=8,
             bg=SURFACE, width=320, height=58)
@@ -2018,7 +2018,7 @@ class ItchyApp(ctk.CTk):
                 state="Indiriliyor...",
                 details=title[:80] if title else "Video indiriliyor",
                 large_image="itchy_logo",
-                large_text="ITCHY YouTube Downloader v1.4",
+                large_text="ITCHY YouTube Downloader v2.0",
                 start=int(time.time())
             )
         except: pass
@@ -2030,7 +2030,7 @@ class ItchyApp(ctk.CTk):
                 state="Bekliyor...",
                 details="ITCHY YouTube Downloader",
                 large_image="itchy_logo",
-                large_text="ITCHY v1.4"
+                large_text="ITCHY v2.0"
             )
         except: pass
 

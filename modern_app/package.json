@@ -1,0 +1,89 @@
+{
+  "name": "itchy-modern-desktop",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Modern desktop shell for ITCHY YouTube Downloader",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "desktop": "concurrently -k \"npm run dev\" \"wait-on http://127.0.0.1:5173 && electron .\"",
+    "worker:build": "pyinstaller --onefile --name itchy-worker ../python_core/worker.py --distpath ../python_core/dist --workpath ../build/worker --specpath ../python_core --noconfirm",
+    "build": "vite build",
+    "package": "npm run worker:build && npm run build && electron-builder --win nsis",
+    "package:dir": "npm run worker:build && npm run build && electron-builder --win --dir"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "lucide-react": "^0.556.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "vite": "^7.2.4",
+    "typescript": "^5.9.3",
+    "electron": "^39.2.7",
+    "concurrently": "^9.2.1",
+    "wait-on": "^9.0.3",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.bogazitchy.itchy",
+    "productName": "Itchy YouTube Downloader",
+    "directories": {
+      "output": "../dist-modern"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../python_core",
+        "to": "python_core"
+      },
+      {
+        "from": "../itchy.py",
+        "to": "itchy.py"
+      },
+      {
+        "from": "../requirements.txt",
+        "to": "requirements.txt"
+      },
+      {
+        "from": "../python_core/dist/itchy-worker.exe",
+        "to": "itchy-worker.exe"
+      },
+      {
+        "from": "../logo.ico",
+        "to": "logo.ico"
+      },
+      {
+        "from": "../ffmpeg.exe",
+        "to": "ffmpeg.exe"
+      },
+      {
+        "from": "../ffprobe.exe",
+        "to": "ffprobe.exe"
+      },
+      {
+        "from": "../ffplay.exe",
+        "to": "ffplay.exe"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "../logo.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Itchy YouTube Downloader"
+    }
+  }
+}
