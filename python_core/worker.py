@@ -38,6 +38,13 @@ def clean_url(url):
 
     url = url.strip()
     parsed = up.urlparse(url)
+    host = (parsed.netloc or "").lower()
+    is_youtube = host in {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"}
+    if not is_youtube:
+        return url
+    if host == "youtu.be":
+        video_id = parsed.path.strip("/").split("/")[0]
+        return f"https://www.youtube.com/watch?v={video_id}" if video_id else url
     if "/shorts/" in parsed.path:
         video_id = parsed.path.split("/shorts/")[-1].split("/")[0].split("?")[0]
         if video_id:
@@ -48,7 +55,14 @@ def clean_url(url):
     return url
 
 
-def get_video_info(url):
+def with_cookiefile(opts, cookiefile):
+    cookiefile = (cookiefile or "").strip().strip('"')
+    if cookiefile and Path(cookiefile).exists():
+        opts["cookiefile"] = cookiefile
+    return opts
+
+
+def get_video_info(url, cookiefile=""):
     opts = {
         "quiet": True,
         "no_warnings": True,
@@ -57,8 +71,17 @@ def get_video_info(url):
         "retries": 2,
         "nocheckcertificate": True,
     }
+    opts = with_cookiefile(opts, cookiefile)
     with yt_dlp.YoutubeDL(opts) as ydl:
         return ydl.extract_info(url, download=False)
+
+
+def platform_name(info):
+    for key in ("extractor_key", "extractor", "webpage_url_domain"):
+        value = info.get(key)
+        if value:
+            return str(value).replace(":", " / ")
+    return "Video"
 
 
 def build_format_list(info, mode):
@@ -99,6 +122,21 @@ def build_format_list(info, mode):
         vcodec = item.get("vcodec") or "none"
         if height and height not in standard and format_id and vcodec != "none":
             results.append((f"{height}p  OZEL", format_id))
+    if results:
+        return results
+
+    for item in formats:
+        format_id = item.get("format_id", "")
+        ext = item.get("ext", "")
+        vcodec = item.get("vcodec") or "none"
+        if format_id and vcodec != "none":
+            label = item.get("format_note") or item.get("resolution") or ext or format_id
+            results.append((f"{label}  VIDEO", format_id))
+    if results:
+        return results
+
+    if info.get("url"):
+        return [("En iyi kalite", "best")]
     return results
 
 
@@ -233,7 +271,14 @@ def choose_format(formats, preferred_label):
     return formats[0]
 
 
-def build_ydl_opts(mode, fmt_id, outdir, clip_start=None, clip_end=None, subtitle=False, sub_lang="tr"):
+def quality_height(label):
+    import re
+
+    match = re.search(r"(\d+)p", label or "")
+    return match.group(1) if match else ""
+
+
+def build_ydl_opts(mode, fmt_id, outdir, clip_start=None, clip_end=None, subtitle=False, sub_lang="tr", quality_label="", cookiefile=""):
     outtmpl = os.path.join(outdir, "%(title)s.%(ext)s")
     base = {
         "quiet": True,
@@ -246,6 +291,7 @@ def build_ydl_opts(mode, fmt_id, outdir, clip_start=None, clip_end=None, subtitl
     }
     if FFMPEG_DIR:
         base["ffmpeg_location"] = FFMPEG_DIR
+    base = with_cookiefile(base, cookiefile)
 
     pp_args = {}
     if clip_start is not None or clip_end is not None:
@@ -283,7 +329,16 @@ def build_ydl_opts(mode, fmt_id, outdir, clip_start=None, clip_end=None, subtitl
             opts["postprocessor_args"] = pp_args
         return opts
 
-    fmt_str = f"{fmt_id}+bestaudio[ext=m4a]/{fmt_id}+bestaudio/bestvideo[height<={fmt_id}]+bestaudio/best"
+    height = quality_height(quality_label)
+    if fmt_id == "best":
+        fmt_str = "bestvideo*+bestaudio/best"
+    elif height:
+        fmt_str = (
+            f"{fmt_id}+bestaudio[ext=m4a]/{fmt_id}+bestaudio/"
+            f"bestvideo[height<={height}]+bestaudio/best[height<={height}]/best"
+        )
+    else:
+        fmt_str = f"{fmt_id}+bestaudio/{fmt_id}/bestvideo*+bestaudio/best"
     merger = ["-c:v", "copy", "-c:a", "aac", "-b:a", "192k"]
     opts_pp = {"merger": merger, **pp_args} if pp_args else {"merger": merger}
     return {
@@ -321,7 +376,7 @@ def command_analyze(payload):
     url = clean_url(payload.get("url", ""))
     mode = payload.get("mode", "mp4")
     emit("status", message="Video analiz ediliyor")
-    info = get_video_info(url)
+    info = get_video_info(url, payload.get("cookiesPath", ""))
     formats = build_format_list(info, mode)
     qualities = [{"label": label, "id": fmt_id} for label, fmt_id in formats]
     selected = qualities[0]["label"] if qualities else ""
@@ -331,6 +386,8 @@ def command_analyze(payload):
         id=info.get("id", ""),
         title=info.get("title", "Bilinmiyor"),
         channel=info.get("uploader", "?"),
+        platform=platform_name(info),
+        webpageUrl=info.get("webpage_url", url),
         duration=seconds_to_hms(info.get("duration")),
         durationSeconds=info.get("duration", 0) or 0,
         views=info.get("view_count", 0) or 0,
@@ -349,7 +406,7 @@ def command_download(payload):
     os.makedirs(outdir, exist_ok=True)
 
     emit("status", message="Video bilgisi aliniyor")
-    info = get_video_info(url)
+    info = get_video_info(url, payload.get("cookiesPath", ""))
     formats = build_format_list(info, mode)
     selected_label, fmt_id = choose_format(formats, quality_label)
     if not fmt_id:
@@ -363,6 +420,8 @@ def command_download(payload):
         clip_end=parse_time(payload.get("clipEnd", "")),
         subtitle=bool(payload.get("subtitle", False)),
         sub_lang=payload.get("subLang", "tr"),
+        quality_label=selected_label,
+        cookiefile=payload.get("cookiesPath", ""),
     )
     emit("status", message=f"Indirme basladi: {mode.upper()} / {selected_label}")
     with yt_dlp.YoutubeDL(opts) as ydl:

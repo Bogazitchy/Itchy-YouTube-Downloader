@@ -2,7 +2,7 @@
   "name": "itchy-modern-desktop",
   "version": "2.0.0",
   "private": true,
-  "description": "Modern desktop shell for ITCHY YouTube Downloader",
+  "description": "Modern desktop shell for ITCHY Video Downloader",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -32,6 +32,7 @@
     "directories": {
       "output": "../dist-modern"
     },
+    "artifactName": "Itchy Video Downloader Setup ${version}.${ext}",
     "files": [
       "dist/**/*",
       "electron/**/*",
@@ -83,7 +84,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Itchy YouTube Downloader"
+      "shortcutName": "Itchy Video Downloader"
     }
   }
 }

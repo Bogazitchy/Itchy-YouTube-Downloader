@@ -724,7 +724,7 @@ details.advanced[open] {
   gap: 14px;
 }
 
-.settings-grid .glass-card:nth-child(3) {
+.settings-grid .glass-card:last-child {
   grid-column: 1 / -1;
 }
 

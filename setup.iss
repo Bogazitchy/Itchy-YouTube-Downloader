@@ -1,9 +1,9 @@
 ; ─────────────────────────────────────────────────────────────────
-;  Itchy YouTube Downloader — Inno Setup Script
+;  Itchy Video Downloader — Inno Setup Script
 ;  Inno Setup 6.x ile derleyin: https://jrsoftware.org/isinfo.php
 ; ─────────────────────────────────────────────────────────────────
 
-#define AppName      "Itchy YouTube Downloader"
+#define AppName      "Itchy Video Downloader"
 #define AppVersion   "2.0"
 #define AppPublisher "Itchy"
 #define AppExeName   "ItchyDownloader.exe"

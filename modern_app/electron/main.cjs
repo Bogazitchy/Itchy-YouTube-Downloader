@@ -36,7 +36,7 @@ function createWindow() {
     height: 820,
     minWidth: 1100,
     minHeight: 720,
-    title: 'ITCHY YouTube Downloader',
+    title: 'ITCHY Video Downloader',
     icon: path.join(rootPath(), 'logo.ico'),
     backgroundColor: '#08111d',
     webPreferences: {

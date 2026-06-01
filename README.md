@@ -1,10 +1,10 @@
-# ITCHY YouTube Downloader
+# ITCHY Video Downloader
 
 <p align="center">
   <img src="modern_app/src/assets/itchy-logo.png" alt="ITCHY Downloader Logo" width="520">
 </p>
 
-Modern, glass efektli Windows masaustu YouTube indirme uygulamasi. ITCHY; YouTube videolarini MP3, MP4 ve M4A formatlarinda analiz etmek, kalite secmek, indirmek, kuyruga almak, gecmisi ve istatistikleri takip etmek icin tasarlanmistir.
+Modern, glass efektli Windows masaustu video indirme uygulamasi. ITCHY; YouTube, X/Twitter, Instagram, Vimeo, TikTok ve yt-dlp tarafindan desteklenen diger platformlardaki videolari MP3, MP4 ve M4A formatlarinda analiz etmek, kalite secmek, indirmek, kuyruga almak, gecmisi ve istatistikleri takip etmek icin tasarlanmistir.
 
 **Versiyon:** v2.0 | **Platform:** Windows | **Modern UI:** Electron + React | **Indirme motoru:** Python + yt-dlp | created by M.Mert
 
@@ -19,6 +19,8 @@ Modern, glass efektli Windows masaustu YouTube indirme uygulamasi. ITCHY; YouTub
 - Dropdown menulerinin kartlarin arkasinda kalmasini engelleyen ust katman sistemi
 - Format degisince kalite listesinin otomatik yenilenmesi
 - Video analizinden sonra thumbnail icin yedekli gorsel yukleme
+- YouTube disindaki desteklenen sosyal platform linklerini analiz edip indirme
+- Instagram/X gibi giris isteyebilen platformlar icin opsiyonel `cookies.txt` yolu
 - Iki kolonlu ana ekran: indirme kontrolleri solda, video onizleme ve ozet sagda
 - Hazir profiller: `MP3 Muzik`, `MP4 720p`, `MP4 1080p`, `Sadece Ses`
 - Indirme ozeti, son indirilenler, islem gunlugu ve istatistik panelleri
@@ -30,7 +32,7 @@ Modern, glass efektli Windows masaustu YouTube indirme uygulamasi. ITCHY; YouTub
 
 ### Yontem 1 - Setup ile Kur
 
-1. [Releases](https://github.com/Bogazitchy/Itchy-YouTube-Downloader/releases) sayfasindan `Itchy YouTube Downloader Setup 2.0.0.exe` dosyasini indir.
+1. [Releases](https://github.com/Bogazitchy/Itchy-YouTube-Downloader/releases) sayfasindan `Itchy Video Downloader Setup 2.0.0.exe` dosyasini indir.
 2. Kurulum sihirbazini calistir.
 3. Masaustu veya Baslat Menusu kisayolundan uygulamayi ac.
 
@@ -72,7 +74,7 @@ Cikti `dist-modern/` klasorune olusur.
 
 ## Kullanim
 
-1. `Video linki` alanina YouTube linkini yapistir.
+1. `Video linki` alanina YouTube, X/Twitter, Instagram, Vimeo veya desteklenen baska bir platform linkini yapistir.
 2. `Analiz Et` butonuna bas.
 3. Format sec: `MP3`, `MP4` veya `M4A`.
 4. Kalite listesinden uygun secenegi sec veya hazir profillerden birini kullan.
@@ -102,6 +104,7 @@ Electron arayuz, Python worker ile JSON olaylari uzerinden haberlesir. Bu sayede
 
 - MP3, MP4 ve M4A format destegi
 - YouTube video ve Shorts linklerini temizleme/donusturme
+- X/Twitter, Instagram, Vimeo, TikTok ve yt-dlp destekli diger platformlardan video indirme
 - Video kalitelerini analizden sonra otomatik listeleme
 - Tahmini dosya boyutu gosterimi
 - Indirme ilerlemesi ve islem gunlugu
@@ -128,6 +131,7 @@ Electron arayuz, Python worker ile JSON olaylari uzerinden haberlesir. Bu sayede
 - Altyazi indirme
 - Altyazi dili secimi
 - Varsayilan veya ozel kayit klasoru
+- Gerekirse `cookies.txt` dosyasi ile giris gerektiren linkleri analiz etme
 
 ### Kuyruk, Gecmis ve Istatistik
 
@@ -146,7 +150,7 @@ Electron arayuz, Python worker ile JSON olaylari uzerinden haberlesir. Bu sayede
 | M4A | 128, 192, 256 kbps |
 | MP4 | 144p, 240p, 360p, 480p, 720p, 1080p, 1440p, 2160p |
 
-Not: Video kaliteleri YouTube'un ilgili video icin sundugu formatlara gore degisir.
+Not: Video kaliteleri ilgili platformun sundugu formatlara gore degisir. Bazi Instagram/X linkleri herkese acik olsa bile giris veya cookie isteyebilir; bu durumda uygulamadaki `cookies.txt` yolu alanini kullanabilirsin.
 
 ---
 
@@ -161,7 +165,13 @@ Not: Video kaliteleri YouTube'un ilgili video icin sundugu formatlara gore degis
 - Dropdownlarin kartlarin arkasinda kalma sorunu portal katmani ile giderildi.
 - Format degisince kalite listesinin eski formattan kalma sorunu duzeltildi.
 - Thumbnail gorunmeme sorunu icin yedekli thumbnail sistemi eklendi.
+- Uygulama YouTube odakli yapi yerine genel video indirici mantigina tasindi.
+- X/Twitter, Instagram, Vimeo, TikTok ve yt-dlp destekli diger platform linkleri icin analiz/indirme destegi eklendi.
+- Giris veya oturum isteyebilen platformlar icin opsiyonel `cookies.txt` yolu eklendi.
+- YouTube disi linklerin yanlislikla YouTube linkine donusturulmesine neden olabilecek URL temizleme mantigi duzeltildi.
+- YouTube disi platformlardaki format id'leriyle calisacak genel MP4 kalite secimi eklendi.
 - Kurulum paketi kullanici bazli kurulumla acilacak sekilde duzenlendi.
+- Installer dosya adi `Itchy Video Downloader Setup 2.0.0.exe` olarak sabitlendi.
 
 ---
 

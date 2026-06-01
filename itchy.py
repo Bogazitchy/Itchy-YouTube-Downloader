@@ -108,6 +108,13 @@ FETCH_TIMEOUT = 20
 def clean_url(url):
     import urllib.parse as up
     url=url.strip(); parsed=up.urlparse(url)
+    host=(parsed.netloc or "").lower()
+    is_youtube=host in {"youtube.com","www.youtube.com","m.youtube.com","music.youtube.com","youtu.be"}
+    if not is_youtube:
+        return url
+    if host == "youtu.be":
+        vid=parsed.path.strip("/").split("/")[0]
+        if vid: return f"https://www.youtube.com/watch?v={vid}"
     if "/shorts/" in parsed.path:
         vid=parsed.path.split("/shorts/")[-1].split("/")[0].split("?")[0]
         if vid: return f"https://www.youtube.com/watch?v={vid}"
@@ -302,7 +309,7 @@ class PixelTitleCanvas(tk.Canvas):
 class ItchyApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("ITCHY YOUTUBE DOWNLOADER v2.0")
+        self.title("ITCHY Video Downloader v2.0")
         self.geometry("1080x840")
         self.minsize(900, 720)
         self.resizable(True, True)
@@ -595,7 +602,7 @@ class ItchyApp(ctk.CTk):
         uc=rcard(body, "VIDEO LINKI"); uc.pack(fill="x",**PAD)
         ui=ctk.CTkFrame(uc,fg_color="transparent"); ui.pack(fill="x",padx=12,pady=(2,10))
         self.url_entry=ctk.CTkEntry(ui,
-            placeholder_text="youtube.com/watch?v=... yapistir",
+            placeholder_text="Video linki yapistir",
             font=(MONO_FONT,12),fg_color=SURF3,border_color=BORDER,border_width=1,
             text_color=TEXT,placeholder_text_color=TEXT_DIM,height=42,corner_radius=6)
         self.url_entry.pack(side="left",fill="x",expand=True,padx=(0,8))
@@ -759,7 +766,7 @@ class ItchyApp(ctk.CTk):
 
         uc=rcard(left,"Video linki"); uc.pack(fill="x",**PAD)
         ui=ctk.CTkFrame(uc,fg_color="transparent"); ui.pack(fill="x",padx=14,pady=(4,12))
-        self.url_entry=ctk.CTkEntry(ui,placeholder_text="youtube.com/watch?v=... yapistir",
+        self.url_entry=ctk.CTkEntry(ui,placeholder_text="Video linki yapistir",
             font=("Segoe UI",13),fg_color=SURF3,border_color=BORDER,border_width=1,
             text_color=TEXT,placeholder_text_color=TEXT_DIM,height=44,corner_radius=12)
         self.url_entry.pack(side="left",fill="x",expand=True,padx=(0,10))
@@ -2018,7 +2025,7 @@ class ItchyApp(ctk.CTk):
                 state="Indiriliyor...",
                 details=title[:80] if title else "Video indiriliyor",
                 large_image="itchy_logo",
-                large_text="ITCHY YouTube Downloader v2.0",
+                large_text="ITCHY Video Downloader v2.0",
                 start=int(time.time())
             )
         except: pass
@@ -2028,7 +2035,7 @@ class ItchyApp(ctk.CTk):
         try:
             self._discord_rpc.update(
                 state="Bekliyor...",
-                details="ITCHY YouTube Downloader",
+                details="ITCHY Video Downloader",
                 large_image="itchy_logo",
                 large_text="ITCHY v2.0"
             )

@@ -1,5 +1,5 @@
 @echo off
-title ITCHY YouTube Downloader v2.0 - Build
+title ITCHY Video Downloader v2.0 - Build
 
 echo.
 echo  ITCHY YOUTUBE DOWNLOADER v2.0 - Windows Build

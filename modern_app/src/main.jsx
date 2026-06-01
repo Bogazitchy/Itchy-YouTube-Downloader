@@ -55,10 +55,12 @@ function formatViews(value) {
 
 function thumbnailCandidates(video) {
   if (!video) return [];
+  const source = `${video.platform || ''} ${video.webpageUrl || ''} ${video.url || ''}`.toLowerCase();
+  const isYouTube = source.includes('youtube') || source.includes('youtu.be');
   return [
     video.thumbnail,
-    video.id ? `https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg` : '',
-    video.id ? `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg` : '',
+    isYouTube && video.id ? `https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg` : '',
+    isYouTube && video.id ? `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg` : '',
   ].filter(Boolean);
 }
 
@@ -155,6 +157,7 @@ function App() {
   const [subtitle, setSubtitle] = useState(false);
   const [subLang, setSubLang] = useState('tr');
   const [outputDir, setOutputDir] = useState('');
+  const [cookiesPath, setCookiesPath] = useState('');
   const [queueUrl, setQueueUrl] = useState('');
   const [queueItems, setQueueItems] = useState([]);
   const [queueRunning, setQueueRunning] = useState(false);
@@ -204,16 +207,16 @@ function App() {
       return;
     }
     setIsBusy(true);
-    setStatus('Video analiz ediliyor');
+      setStatus('Link analiz ediliyor');
     setProgress({ value: 0, percent: '' });
     try {
-      const result = await api.runWorker('analyze', { url, mode: nextMode });
+      const result = await api.runWorker('analyze', { url, mode: nextMode, cookiesPath });
       setVideo(result);
       setThumbnailIndex(0);
       setQualities(result.qualities || []);
       const preferred = (result.qualities || []).find((item) => item.label.startsWith(preferredQuality));
       setQuality(preferred?.label || result.selectedQuality || result.qualities?.[0]?.label || '');
-      setStatus('Video hazir');
+      setStatus(`${result.platform || 'Video'} hazir`);
       addLog(`Analiz tamamlandi: ${result.title}`);
     } catch (error) {
       setStatus('Analiz basarisiz');
@@ -235,6 +238,7 @@ function App() {
         clipEnd: clipEnabled ? clipEnd : '',
         subtitle,
         subLang,
+        cookiesPath,
       },
       (event) => {
         if (event.event === 'status') {
@@ -326,14 +330,14 @@ function App() {
     <div className="main-grid">
       <section className="left-column">
         <div className="glass-card input-card">
-          <label>Video linki</label>
+            <label>Video linki</label>
           <div className="url-row">
             <Search size={20} />
             <input
               value={url}
               onChange={(event) => setUrl(event.target.value)}
               onKeyDown={(event) => event.key === 'Enter' && analyze()}
-              placeholder="youtube.com/watch?v=..."
+              placeholder="YouTube, X/Twitter, Instagram, Vimeo veya desteklenen bir video linki"
             />
             <button disabled={isBusy} onClick={() => analyze()}>{isBusy ? 'Bekle' : 'Analiz Et'}</button>
           </div>
@@ -383,12 +387,16 @@ function App() {
               Altyazi indir
             </label>
             <SoftSelect value={subLang} options={subtitleLanguages} onChange={setSubLang} placeholder="Dil" />
-            <div className="folder-row">
-              <Folder size={18} />
-              <input value={outputDir} onChange={(e) => setOutputDir(e.target.value)} placeholder="Varsayilan Downloads klasoru" />
-            </div>
-          </div>
-        </details>
+                <div className="folder-row">
+                  <Folder size={18} />
+                  <input value={outputDir} onChange={(e) => setOutputDir(e.target.value)} placeholder="Varsayilan Downloads klasoru" />
+                </div>
+                <div className="folder-row">
+                  <FileVideo size={18} />
+                  <input value={cookiesPath} onChange={(e) => setCookiesPath(e.target.value)} placeholder="Opsiyonel cookies.txt yolu" />
+                </div>
+              </div>
+            </details>
 
         <div className="download-card">
           <button className="primary-download" disabled={isBusy || !video} onClick={startDownload}>
@@ -415,8 +423,12 @@ function App() {
               <Play size={46} />
             )}
           </div>
-          <h2>{video?.title || 'URL girip analiz edin'}</h2>
-          <p>{video ? `${video.channel} - ${video.duration} - ${formatViews(video.views)} izlenme` : 'Video bilgileri burada gorunecek.'}</p>
+          <h2>{video?.title || 'Video linki girip analiz edin'}</h2>
+          <p>
+            {video
+              ? `${video.platform || 'Video'} - ${video.channel} - ${video.duration} - ${formatViews(video.views)} izlenme`
+              : 'Desteklenen platformlardaki video bilgileri burada gorunecek.'}
+          </p>
         </div>
 
         <div className="glass-card summary-card">
@@ -455,7 +467,7 @@ function App() {
             value={queueUrl}
             onChange={(event) => setQueueUrl(event.target.value)}
             onKeyDown={(event) => event.key === 'Enter' && addQueueItem()}
-            placeholder="youtube.com/watch?v=..."
+            placeholder="Video linki yapistir"
           />
           <button onClick={addQueueItem}>Ekle</button>
         </div>
@@ -548,6 +560,13 @@ function App() {
           <div className="folder-row">
             <Folder size={18} />
             <input value={outputDir} onChange={(e) => setOutputDir(e.target.value)} placeholder="Varsayilan Downloads klasoru" />
+          </div>
+        </div>
+        <div className="glass-card">
+          <label>Cookies dosyasi</label>
+          <div className="folder-row">
+            <FileVideo size={18} />
+            <input value={cookiesPath} onChange={(e) => setCookiesPath(e.target.value)} placeholder="Instagram/X icin opsiyonel cookies.txt yolu" />
           </div>
         </div>
         <div className="glass-card">
